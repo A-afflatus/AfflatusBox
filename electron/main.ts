@@ -47,12 +47,17 @@ function createWindow() {
     win.loadFile(path.join(process.env.DIST, 'index.html'))
   }
 }
-
+nativeTheme.themeSource = 'light'
 app.on('window-all-closed', () => {
   win = null
 })
 
 app.whenReady().then(createWindow)
+
+// 使用默认设置，setting.json
+// settings.configure({})
+
+// settings.configure({})
 
 //! 自定义事件
 
@@ -80,8 +85,6 @@ ipcMain.on(OPEN_URL, (_event, url) => {
 ipcMain.on(QUIT_APP, () => {
   app.quit()
 })
-// 使用默认设置，setting.json
-// settings.configure({})
 
 
 // 获取s3客户端列表
