@@ -12,22 +12,36 @@
     "dist-electron",
     "dist"
   ],
+  // "mac": {
+  //   "artifactName": "${productName}_${version}.${ext}",
+  //   "target": [
+  //     "dmg"
+  //   ]
+  // },
   "mac": {
-    "artifactName": "${productName}_${version}.${ext}",
+    "icon": "public/afflatus-logo.icns",
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "target": [
-      "dmg"
+      {
+        "target": "dmg",
+        "arch": [
+          "x64",
+          "arm64"
+        ],
+      }
     ]
   },
   "win": {
+    // "icon":"public/afflatus-logo.ico",
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "target": [
       {
         "target": "nsis",
         "arch": [
           "x64"
-        ]
+        ],
       }
-    ],
-    "artifactName": "${productName}_${version}.${ext}"
+    ]
   },
   "nsis": {
     "oneClick": false,

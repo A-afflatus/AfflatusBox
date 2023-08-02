@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Button, FileButton, Flex, Grid, Input, Modal, TextInput } from "@mantine/core";
+import { Button, FileButton, Flex, Grid, Input, Modal, TextInput, Tooltip, Select, Text, Center } from "@mantine/core";
 import { IconArrowBigLeft, IconArrowBigRight, IconArrowBigUp, IconRefresh, IconHome2, IconFolderPlus, IconSearch, IconChevronLeft, IconFileUpload, IconChevronRight, IconX, IconCheck } from "@tabler/icons-react";
 import FileTable from './FileTable'
 import { useContext, useEffect, useRef, useState } from "react";
@@ -12,6 +12,10 @@ export default function ClientInfo() {
     const s3Context = useContext(S3ClientContext)
     const [objects, setObects] = useState<ListObjectsV2CommandOutput>()
     const [directoryPath, setDirectoryPath] = useState<string>("")
+    const [pageSize, setPageSize] = useState<number>(10)
+    const [openedFolder, disclosureFolder] = useDisclosure(false);
+
+
     //分页token栈
     const [tokenStack, setTokenStack] = useState<string[]>([])
     const pushTokenStack = (item: string) => {
@@ -56,7 +60,7 @@ export default function ClientInfo() {
                 Bucket: s3Context.currentBucket.Name,
                 Delimiter: '/',
                 Prefix: directoryPath,
-                MaxKeys: 10
+                MaxKeys: pageSize
             }
             if (tokenStack.length > 0) {
                 command = {
@@ -76,7 +80,7 @@ export default function ClientInfo() {
                     })
                 })
         }
-    }, [directoryPath, s3Context, refreshFlag, tokenStack])
+    }, [directoryPath, s3Context, refreshFlag, tokenStack, pageSize])
     //点击文件夹事件
     useEffect(() => {
         //再订阅事件
@@ -84,9 +88,9 @@ export default function ClientInfo() {
         //订阅刷新数据事件
         emitter.on(REFRESH, refresh)
         return () => {
-            emitter.off(ENTERFOLDER,setDirectoryPath)
-            emitter.off(REFRESH,refresh)
-          }
+            emitter.off(ENTERFOLDER, setDirectoryPath)
+            emitter.off(REFRESH, refresh)
+        }
     }, [refresh])
     //上一级
     const topLevel = () => {
@@ -134,11 +138,13 @@ export default function ClientInfo() {
     const uploadFile = (file: File) => {
         const basePath = directoryPath.split('/')
         basePath.pop()
-        emitter.emit(UPLOADFILE, file, basePath.join('/') + '/' + file.name)
+        const path = basePath.join('/') + '/'
+        emitter.emit(UPLOADFILE, file, path === '/' ? file.name : path + file.name)
         uploadFileRef.current?.()
     }
 
-    const [openedFolder, disclosureFolder] = useDisclosure(false);
+
+
     return (
         <>
             <Modal opened={openedFolder} onClose={disclosureFolder.close} title="创建目录" centered>
@@ -152,21 +158,28 @@ export default function ClientInfo() {
             </Modal>
             {/* 上面是弹窗 */}
             <Button.Group style={{ marginBottom: '5px' }}>
-                {/* 向左后退 */}
-                <Button size="xs" variant="default" disabled ><IconArrowBigLeft size="1rem" /></Button>
-                {/* 向右前进 */}
-                <Button size="xs" variant="default" disabled><IconArrowBigRight size="1rem" /></Button>
-                {/* 上一级 */}
-                <Button size="xs" variant="default" onClick={topLevel}><IconArrowBigUp size="1rem" /></Button>
+                <Tooltip label="向左后退">
+                    <Button size="xs" variant="default" disabled ><IconArrowBigLeft size="1rem" /></Button>
+                </Tooltip>
+                <Tooltip label="向右前进">
+                    <Button size="xs" variant="default" disabled><IconArrowBigRight size="1rem" /></Button>
+                </Tooltip>
+                <Tooltip label="上一级">
+                    <Button size="xs" variant="default" onClick={topLevel}><IconArrowBigUp size="1rem" /></Button>
+                </Tooltip>
                 {/* 路径 */}
-                <Input size="xs" style={{ width: "700vh" }} placeholder="目录路径" ref={directoryPathRef} onKeyDown={(event) => event.key === 'Enter' ? updateDirectoryPath() : null} rightSection={<IconSearch size={14} stroke={1.5} />} />
-                {/* 刷新 */}
-                <Button size="xs" variant="default" onClick={() => refresh()}><IconRefresh size="1rem" /></Button>
-                {/* 回到根目录 */}
-                <Button size="xs" variant="default" onClick={toHome}><IconHome2 size="1rem" /></Button>
+                <Input size="xs" style={{ width: "700vh", marginLeft: "3px", marginRight: "3px" }} placeholder="目录路径" ref={directoryPathRef} onKeyDown={(event) => event.key === 'Enter' ? updateDirectoryPath() : null} rightSection={<IconSearch size={14} stroke={1.5} />} />
+                <Button.Group>
+                    <Tooltip label="刷新">
+                        <Button size="xs" variant="default" onClick={() => refresh()}><IconRefresh size="1rem" /></Button>
+                    </Tooltip>
+                    <Tooltip label="回到根目录">
+                        <Button size="xs" variant="default" onClick={toHome}><IconHome2 size="1rem" /></Button>
+                    </Tooltip>
+                </Button.Group>
             </Button.Group>
-            <Grid >
-                <Grid.Col span={4}>
+            <Grid columns={48}>
+                <Grid.Col span={16}>
                     <Button.Group>
                         {/* 上传文件 */}
                         <FileButton resetRef={uploadFileRef} onChange={uploadFile} multiple={false}>
@@ -177,11 +190,30 @@ export default function ClientInfo() {
                     </Button.Group>
                 </Grid.Col>
                 {/* 当前目录搜索 */}
-                <Grid.Col span={5}>
+                <Grid.Col span={18}>
                     <Input size="xs" placeholder="当前目录搜索" ref={directorySearchRef} onKeyDown={(event) => event.key === 'Enter' ? updateDirectoryPath() : null} rightSection={<IconSearch size={14} stroke={1.5} />} />
                 </Grid.Col>
+                <Grid.Col span={4}>
+                    <Text size="xs" ta="center" style={{marginTop:6}}>
+                        {"结果数:"+objects?.KeyCount}
+                    </Text>
+                </Grid.Col>
+                <Grid.Col span={5}>
+                    <Tooltip label="每页展示数量">
+                        <Select
+                            size="xs"
+                            onChange={(size) => {
+                                setPageSize(parseInt(size ?? '10'))
+                                //清空翻页token回到首页
+                                setTokenStack([])
+                            }}
+                            defaultValue={pageSize.toString()}
+                            data={["10", "30", "50", "100"]}
+                        />
+                    </Tooltip>
+                </Grid.Col>
                 {/* 分页 */}
-                <Grid.Col span={2} offset={1}>
+                <Grid.Col span={2} offset={3}>
                     <Flex
                         gap="md"
                         justify="flex-end"
@@ -190,17 +222,18 @@ export default function ClientInfo() {
                         wrap="wrap"
                     >
                         <Button.Group>
-                            {/* todo 这个需要将每次下一页的token记录成一个栈，每次下一页就是入栈，上一页就是出栈 */}
-                            <Button size="xs" variant="default" onClick={() => popTokenStack()}><IconChevronLeft size="1rem" /></Button>
-                            <Button size="xs" variant="default" onClick={() => objects?.NextContinuationToken ? pushTokenStack(objects?.NextContinuationToken) : null}><IconChevronRight size="1rem" /></Button>
+                            <Tooltip label="上一页">
+                                <Button size="xs" variant="default" onClick={() => popTokenStack()}><IconChevronLeft size="1rem" /></Button>
+                            </Tooltip>
+                            <Tooltip label="下一页">
+                                <Button size="xs" variant="default" onClick={() => objects?.NextContinuationToken ? pushTokenStack(objects?.NextContinuationToken) : null}><IconChevronRight size="1rem" /></Button>
+                            </Tooltip>
                         </Button.Group>
                     </Flex>
 
                 </Grid.Col>
             </Grid>
-            <div>
-                <FileTable objects={objects} />
-            </div>
+            <FileTable objects={objects} />
         </>
     )
 }

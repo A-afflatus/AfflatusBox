@@ -64,7 +64,9 @@ export default function NavbarSearch() {
         }
     }, [setSection])
     return (
-        <Navbar height='100vh' width={{ sm: '200px' }} p="md" className={classes.navbar} style={{ resize: 'horizontal', overflow: 'auto' }}>
+        <Navbar height='100vh' width={{ sm: '200px' }} p="md" className={classes.navbar} 
+        // style={{ resize: 'horizontal', overflow: 'auto' }}
+        >
 
             <Navbar.Section className={classes.section}>
                 <TopLinks />

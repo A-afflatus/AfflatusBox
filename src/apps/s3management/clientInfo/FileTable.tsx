@@ -109,15 +109,10 @@ const DeleteButton = ({ item }: { item: FileInfo }) => {
 
 const useStyles = createStyles((theme) => ({
     rowSelected: {
-        backgroundColor:
-            theme.colorScheme === 'dark'
-                ? theme.fn.rgba(theme.colors[theme.primaryColor][7], 0.2)
-                : theme.colors[theme.primaryColor][0],
     },
     header: {
         position: 'sticky',
         top: 0,
-        backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.white,
         transition: 'box-shadow 150ms ease',
 
         '&::after': {
@@ -246,15 +241,15 @@ export default function FileTable({ objects }: { objects?: ListObjectsV2CommandO
                         transitionDuration={0}
                     />
                 </td>
-                <td style={{ textAlign: "center", verticalAlign: 'middle' }}>
+                <td style={{ textAlign: "left"}}>
                     {
                         item.type === 'directory' ? <Anchor onClick={() => emitter.emit(ENTERFOLDER, item.id)} >{item.name}</Anchor> : item.name
                     }
 
                 </td>
-                <td style={{ textAlign: "center", verticalAlign: 'middle' }}>{item.type === 'directory' ? '目录' : '文件'}</td>
-                <td style={{ textAlign: "center", verticalAlign: 'middle' }}>{item.size ? (item.size / 1024).toFixed(2) + 'KB' : ''}</td>
-                <td style={{ textAlign: "center", verticalAlign: 'middle' }}>{item.lastModified}</td>
+                <td style={{ textAlign: "left"}}>{item.type === 'directory' ? '目录' : '文件'}</td>
+                <td style={{ textAlign: "left"}}>{item.size ? (item.size / 1024).toFixed(2) + 'KB' : ''}</td>
+                <td style={{ textAlign: "left"}}>{item.lastModified}</td>
                 <td >
                     <Flex
                         justify="center"
@@ -276,7 +271,7 @@ export default function FileTable({ objects }: { objects?: ListObjectsV2CommandO
     });
     return (
         <>
-            <ScrollArea h={'75vh'} >
+            <ScrollArea >
                 <Table verticalSpacing={5}>
                     <thead className={cx(classes.header)}>
                         <tr>
@@ -289,10 +284,10 @@ export default function FileTable({ objects }: { objects?: ListObjectsV2CommandO
                                     transitionDuration={0}
                                 />
                             </th>
-                            <th style={{ textAlign: "center" }}>名称</th>
-                            <th style={{ textAlign: "center" }}>类型</th>
-                            <th style={{ textAlign: "center" }}>大小</th>
-                            <th style={{ textAlign: "center" }}>最后修改时间</th>
+                            <th style={{ textAlign: "left" }}>名称</th>
+                            <th style={{ textAlign: "left" }}>类型</th>
+                            <th style={{ textAlign: "left" }}>大小</th>
+                            <th style={{ textAlign: "left" }}>最后修改时间</th>
                             <th style={{ textAlign: "center" }}>操作</th>
                         </tr>
                     </thead>

@@ -23,7 +23,7 @@ const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
 
 function createWindow() {
   win = new BrowserWindow({
-    icon: path.join(process.env.PUBLIC, 'electron-vite.svg'),
+    icon: path.join(process.env.PUBLIC, 'afflatus-logo.svg'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: false,
@@ -33,7 +33,7 @@ function createWindow() {
   })
 
   // 设置窗口的最小尺寸
-  win.setMinimumSize(800, 600);
+  win.setMinimumSize(800, 700);
   win.setSize(1200, 800)
   // Test active push message to Renderer-process.
   win.webContents.on('did-finish-load', () => {
@@ -95,7 +95,7 @@ ipcMain.handle(GET_S3_CLIENTS, async () => {
 //新增s3客户端
 ipcMain.handle(SAVE_S3_CLIENTS, async (_, clientInfo) => {
   try {
-    const s3clients: any = await settings.get('s3clients')
+    const s3clients: any = await settings.get('s3clients')??[]
     await settings.set('s3clients', [...s3clients, {
       ...clientInfo
     }])

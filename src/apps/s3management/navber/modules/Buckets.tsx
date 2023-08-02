@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Bucket, CreateBucketCommand, ListBucketsCommand } from "@aws-sdk/client-s3";
-import { ActionIcon, Group, Modal, Skeleton, Text, TextInput, Tooltip, createStyles, rem } from "@mantine/core";
+import { ActionIcon, Group, Modal, Skeleton, Text, TextInput, Tooltip, createStyles, rem, useMantineTheme } from "@mantine/core";
 import { IconCheck, IconPlus, IconRefresh, IconX } from "@tabler/icons-react";
 import { useContext, useEffect, useState } from "react";
 import { S3Context, S3ClientContext } from '@/apps/s3management'
@@ -43,6 +43,7 @@ export default function BottomLinks() {
     const [items, setItems] = useState<Bucket[]>([])
     const [flag, refresh] = useToggle([true, false]);
     const [loading, setLoading] = useState(true);
+    const theme = useMantineTheme()
     useEffect(() => {
         setLoading(true)
         s3Context.currentClient?.send(new ListBucketsCommand({}))
@@ -79,7 +80,15 @@ export default function BottomLinks() {
 
             })
     }
-
+    const checkCurrent = (name:string)=>{
+        if(s3Context.currentBucket?.Name === name){
+            return {
+                backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[2],
+                color: theme.colorScheme === 'dark' ? theme.white : theme.black,
+            }
+        }
+        return undefined
+    }
     return (
         <>
             <Modal opened={openedCreateBucket} onClose={disclosureCreateBucket.close} title="创建目录" centered>
@@ -102,7 +111,7 @@ export default function BottomLinks() {
                         </ActionIcon>
                     </Tooltip>
                     <div style={{ margin: '0 1px' }} />
-                    <Tooltip label="添加客户端" withArrow position="right">
+                    <Tooltip label="添加桶" withArrow position="right">
                         <ActionIcon variant="default" size={18} onClick={disclosureCreateBucket.open}>
                             <IconPlus size="0.8rem" stroke={1.5} />
                         </ActionIcon>
@@ -117,7 +126,7 @@ export default function BottomLinks() {
                                 key={item.Name ?? "" + item.CreationDate}
                                 className={classes.collectionLink}
                                 onClick={() => { emitter.emit(PITCHBUCKET, item) }}
-                                style={{ backgroundColor: s3Context.currentBucket?.Name === item.Name ? '#e6f7ff' : '' }}
+                                style={checkCurrent(item.Name??"")}
                             >
 
                                 {item.Name}

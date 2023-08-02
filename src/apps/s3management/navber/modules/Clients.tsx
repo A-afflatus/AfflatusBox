@@ -1,4 +1,4 @@
-import { Button, TextInput, Box, ActionIcon, Group, Text, Tooltip, createStyles, rem, Modal, Checkbox, Skeleton } from "@mantine/core";
+import { Button, TextInput, Box, ActionIcon, Group, Text, Tooltip, createStyles, rem, Modal, Checkbox, Skeleton, useMantineTheme } from "@mantine/core";
 import { IconCheck, IconPlus, IconRefresh, IconX } from "@tabler/icons-react";
 import { S3ClientInfo, getS3Clients, saveS3Client } from '@/redux'
 import { useContext, useEffect, useState } from "react";
@@ -96,52 +96,54 @@ function CreateS3Client({ close }: { close: () => void }) {
         }
     }
     return (
-        <Box component="form" maw={400} mx="auto" onSubmit={form.onSubmit(() => check ? saveForm() : checkForm())} >
-            <TextInput
-                label="客户端名称"
-                placeholder="客户端名称"
-                withAsterisk
-                mt="md"
-                {...form.getInputProps('name')}
-            />
-            <TextInput
-                label="region"
-                placeholder="请输入region"
-                withAsterisk
-                mt="md"
-                {...form.getInputProps('region')}
-            />
-            <TextInput
-                label="endpoint"
-                placeholder="请输入endpoint"
-                withAsterisk
-                mt="md"
-                {...form.getInputProps('endpoint')}
-            />
-            <TextInput
-                label="accessKeyId"
-                placeholder="请输入accessKeyId"
-                withAsterisk
-                mt="md"
-                {...form.getInputProps('accessKeyId')}
-            />
-            <TextInput
-                label="secretKey"
-                placeholder="请输入secretKey"
-                withAsterisk
-                mt="md"
-                {...form.getInputProps('secretAccessKey')}
-            />
-            <Checkbox
-                label="虚拟主机样式"
-                mt="md"
-                {...form.getInputProps('forcePathStyle', { type: 'checkbox' })}
-            />
-            <Group position="right" mt="md">
-                {
-                    check ? <Button type="submit">创建</Button> : <Button type="submit">验证</Button>
-                }
-            </Group>
+        <Box maw={400} mx="auto" >
+            <form onSubmit={form.onSubmit(() => check ? saveForm() : checkForm())}>
+                <TextInput
+                    label="客户端名称"
+                    placeholder="客户端名称"
+                    withAsterisk
+                    mt="md"
+                    {...form.getInputProps('name')}
+                />
+                <TextInput
+                    label="region"
+                    placeholder="请输入region"
+                    withAsterisk
+                    mt="md"
+                    {...form.getInputProps('region')}
+                />
+                <TextInput
+                    label="endpoint"
+                    placeholder="请输入endpoint"
+                    withAsterisk
+                    mt="md"
+                    {...form.getInputProps('endpoint')}
+                />
+                <TextInput
+                    label="accessKeyId"
+                    placeholder="请输入accessKeyId"
+                    withAsterisk
+                    mt="md"
+                    {...form.getInputProps('accessKeyId')}
+                />
+                <TextInput
+                    label="secretKey"
+                    placeholder="请输入secretKey"
+                    withAsterisk
+                    mt="md"
+                    {...form.getInputProps('secretAccessKey')}
+                />
+                <Checkbox
+                    label="虚拟主机样式"
+                    mt="md"
+                    {...form.getInputProps('unForcePathStyle', { type: 'checkbox' })}
+                />
+                <Group position="right" mt="md">
+                    {
+                        check ? <Button type="submit">创建</Button> : <Button type="submit">验证</Button>
+                    }
+                </Group>
+            </form>
         </Box>
     );
 }
@@ -180,10 +182,11 @@ export default function BottomLinks() {
     const [items, setItems] = useState<S3ClientInfo[]>([])
     const [refreshFlag, refresh] = useToggle([true, false])
     const [loading, setLoading] = useState(true);
+    const theme = useMantineTheme()
     //获取所有客户端信息
     useEffect(() => {
         getS3Clients()
-            .then((clients) => setItems(clients??[]))
+            .then((clients) => setItems(clients ?? []))
             .catch((error) => {
                 console.log(error);
                 notifications.show({
@@ -192,9 +195,18 @@ export default function BottomLinks() {
                     color: 'red'
                 })
             }).finally(() => { setLoading(false) })
-    }, [refreshFlag,setItems])
+    }, [refreshFlag, setItems])
     //新建客户端
     const [opened, { open, close }] = useDisclosure(false, { onClose: () => refresh() });
+    const checkCurrent = (id:string)=>{
+        if(s3context.currentClientConfig?.id === id){
+            return {
+                backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[2],
+                color: theme.colorScheme === 'dark' ? theme.white : theme.black,
+            }
+        }
+        return undefined
+    }
     return (
         <>
             <Modal opened={opened} onClose={close} title="新建客户端">
@@ -204,13 +216,13 @@ export default function BottomLinks() {
                 <Text size="xs" fw={700} weight={500} >
                     Clients
                 </Text>
-                <div style={{display:'flex'}}>
+                <div style={{ display: 'flex' }}>
                     <Tooltip label='刷新' withArrow position="right">
-                        <ActionIcon variant="default" size={18} onClick={()=>refresh()}>
+                        <ActionIcon variant="default" size={18} onClick={() => refresh()}>
                             <IconRefresh size="0.8rem" stroke={1.5} />
                         </ActionIcon>
                     </Tooltip>
-                    <div style={{margin: '0 1px'}} />
+                    <div style={{ margin: '0 1px' }} />
                     <Tooltip label='添加客户端' withArrow position="right">
                         <ActionIcon variant="default" size={18} onClick={open}>
                             <IconPlus size="0.8rem" stroke={1.5} />
@@ -224,7 +236,7 @@ export default function BottomLinks() {
                         <a
                             key={item.id}
                             className={classes.collectionLink}
-                            style={{ backgroundColor: s3context.currentClientConfig?.id === item.id ? '#e6f7ff' : '' }}
+                            style={checkCurrent(item.id)}
                             onClick={() => {
                                 emitter.emit(PITCHS3CLIENT, item)
                             }}

@@ -15,8 +15,8 @@ function App() {
       setColorScheme(color)
     })
   //切换主题颜色函数
-  const toggleColor = (value?: ColorScheme) => {
-    setColorScheme(value || (colorScheme === "dark" ? "light" : "dark"));
+  const toggleColor = () => {
+    setColorScheme(colorScheme === "dark" ? "light" : "dark");
     toggleColorScheme()
   }
 
