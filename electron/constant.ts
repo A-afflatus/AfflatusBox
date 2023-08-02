@@ -9,5 +9,7 @@ export const GET_THEME_COLORS = 'getThemeColors'
 export const OPEN_URL = 'openUrl'
 //获取s3客户端列表
 export const GET_S3_CLIENTS = 'getS3Clients'
-//系增s3客户端
+//新增s3客户端
 export const SAVE_S3_CLIENTS = 'saveS3Client'
+//删除s3客户端
+export const DELETE_S3_CLIENT = 'deleteS3Client'

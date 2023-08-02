@@ -27,6 +27,10 @@ export const getS3Clients = ():Promise<S3ClientInfo[]> => {
 export const saveS3Client = (clientInfo:S3ClientInfo):Promise<boolean> => {
     return ipcRenderer.invoke('saveS3Client',clientInfo).then()
 }
+//删除客户端信息
+export const deleteS3Client = (clientId:string):Promise<void> => {
+    return ipcRenderer.invoke('deleteS3Client',clientId)
+}
 
 export default s3ClientSlice.reducer
 

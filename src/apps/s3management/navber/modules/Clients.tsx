@@ -1,6 +1,6 @@
-import { Button, TextInput, Box, ActionIcon, Group, Text, Tooltip, createStyles, rem, Modal, Checkbox, Skeleton, useMantineTheme } from "@mantine/core";
-import { IconCheck, IconPlus, IconRefresh, IconX } from "@tabler/icons-react";
-import { S3ClientInfo, getS3Clients, saveS3Client } from '@/redux'
+import { Button, TextInput, Box, ActionIcon, Group, Text, Tooltip, createStyles, rem, Modal, Checkbox, Skeleton, useMantineTheme, Center } from "@mantine/core";
+import { IconCheck, IconPlus, IconRefresh, IconSettings, IconTrash, IconX } from "@tabler/icons-react";
+import { S3ClientInfo, getS3Clients, saveS3Client, deleteS3Client } from '@/redux'
 import { useContext, useEffect, useState } from "react";
 import emitter, { PITCHS3CLIENT } from '@/apps/s3management/event'
 import { S3ClientContext } from '@/apps/s3management'
@@ -197,9 +197,10 @@ export default function BottomLinks() {
             }).finally(() => { setLoading(false) })
     }, [refreshFlag, setItems])
     //新建客户端
-    const [opened, { open, close }] = useDisclosure(false, { onClose: () => refresh() });
-    const checkCurrent = (id:string)=>{
-        if(s3context.currentClientConfig?.id === id){
+    const [openedNewClient, newClientDisclosure] = useDisclosure(false, { onClose: () => refresh() });
+    const [openedDeleteClient, deleteClientDisclosure] = useDisclosure(false, { onClose: () => refresh() });
+    const checkCurrent = (id: string) => {
+        if (s3context.currentClientConfig?.id === id) {
             return {
                 backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[2],
                 color: theme.colorScheme === 'dark' ? theme.white : theme.black,
@@ -207,10 +208,51 @@ export default function BottomLinks() {
         }
         return undefined
     }
+    const [deleteId, setDeleteId] = useState<string>();
+    //删除客户端
+    const deleteClient = () => {
+        if (deleteId) {
+            deleteS3Client(deleteId)
+                .then(() => {
+                    notifications.show({
+                        message: '删除客户端信息成功',
+                        icon: <IconCheck size="1.1rem" />,
+                        color: 'green'
+                    })
+                })
+                .catch((e) => {
+                    console.log("删除客户端失败", e);
+                    notifications.show({
+                        message: '删除客户端信息失败',
+                        icon: <IconX size="1.1rem" />,
+                        color: 'red'
+                    })
+                })
+                .finally(() => {
+                    deleteClientDisclosure.close()
+                    setTimeout(() => {
+                        refresh()
+                    },300)
+                })
+        }
+    }
     return (
         <>
-            <Modal opened={opened} onClose={close} title="新建客户端">
-                <CreateS3Client close={close} />
+            <Modal size="auto" withCloseButton={false} centered opened={openedDeleteClient} onClose={deleteClientDisclosure.close} title=" ">
+                <Center mx="auto">
+                    确认要<Text c="red">删除</Text>吗？
+                </Center>
+                <Group mt="xl">
+                    <Button variant="outline" color="red" onClick={deleteClient}>
+                        删除
+                    </Button>
+                    <Button variant="outline" onClick={deleteClientDisclosure.close}>
+                        取消
+                    </Button>
+                </Group>
+            </Modal>
+            <Modal opened={openedNewClient} onClose={newClientDisclosure.close} title="新建客户端">
+                <CreateS3Client close={newClientDisclosure.close} />
             </Modal>
             <Group className={classes.collectionsHeader} position="apart">
                 <Text size="xs" fw={700} weight={500} >
@@ -224,7 +266,7 @@ export default function BottomLinks() {
                     </Tooltip>
                     <div style={{ margin: '0 1px' }} />
                     <Tooltip label='添加客户端' withArrow position="right">
-                        <ActionIcon variant="default" size={18} onClick={open}>
+                        <ActionIcon variant="default" size={18} onClick={newClientDisclosure.open}>
                             <IconPlus size="0.8rem" stroke={1.5} />
                         </ActionIcon>
                     </Tooltip>
@@ -233,16 +275,25 @@ export default function BottomLinks() {
             <div className={classes.collections}>
                 <Skeleton height='60vh' visible={loading}>
                     {items.map((item) => (
-                        <a
-                            key={item.id}
-                            className={classes.collectionLink}
-                            style={checkCurrent(item.id)}
-                            onClick={() => {
-                                emitter.emit(PITCHS3CLIENT, item)
-                            }}
-                        >
-                            {item.name}
-                        </a>
+                        <div key={item.id} className={classes.collectionLink} style={checkCurrent(item.id)}>
+                            <Group position="apart">
+                                <a onClick={() => { emitter.emit(PITCHS3CLIENT, item) }}>
+                                    {item.name}
+                                </a>
+                                <div style={{
+                                    display: 'flex',
+                                }}>
+                                    <ActionIcon size={15} variant="transparent"><IconSettings size="0.9rem" /></ActionIcon>
+                                    <ActionIcon size={15} variant="transparent" style={{ marginRight: '-7px' }} onClick={() => {
+                                        setDeleteId(item.id)
+                                        deleteClientDisclosure.open()
+                                    }}>
+                                        <IconTrash size="0.9rem" color="#c97273" />
+                                    </ActionIcon>
+                                </div>
+                            </Group>
+                        </div>
+
                     ))}
                 </Skeleton>
             </div>

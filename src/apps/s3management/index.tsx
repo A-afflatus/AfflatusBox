@@ -34,11 +34,13 @@ export default function S3ClientManage() {
     }
     //选中bucket
     const pitchBucket = (bucket: Bucket) => {
-      const newContext = {
-        ...s3Context,
-        currentBucket: bucket
+      if(s3Context.currentBucket?.Name!==bucket.Name){
+        const newContext = {
+          ...s3Context,
+          currentBucket: bucket
+        }
+        setS3Context(newContext)
       }
-      setS3Context(newContext)
     }
     //存储上传中的列表
     const uploadFile = (file: File | null, fileKey: string) => {

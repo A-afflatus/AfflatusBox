@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { app, BrowserWindow, ipcMain, nativeTheme, shell } from 'electron'
 import path from 'node:path'
-import { SWITCH_THEME_COLORS, GET_THEME_COLORS, QUIT_APP, OPEN_URL, GET_S3_CLIENTS, SAVE_S3_CLIENTS } from './constant';
+import { SWITCH_THEME_COLORS, GET_THEME_COLORS, QUIT_APP, OPEN_URL, GET_S3_CLIENTS, SAVE_S3_CLIENTS, DELETE_S3_CLIENT } from './constant';
 import settings from 'electron-settings'
 
 // The built directory structure
@@ -104,4 +104,10 @@ ipcMain.handle(SAVE_S3_CLIENTS, async (_, clientInfo) => {
     console.log("添加s3客户端失败", error);
     return false
   }
+});
+
+//删除s3客户端
+ipcMain.handle(DELETE_S3_CLIENT, async (_, clientId) => {
+    const s3clients: any = await settings.get('s3clients')??[]
+    return settings.set('s3clients', [...(s3clients.filter((item: any)=>item.id !== clientId))])
 });

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Button, FileButton, Flex, Grid, Input, Modal, TextInput, Tooltip, Select, Text, Center } from "@mantine/core";
+import { Button, FileButton, Flex, Grid, Input, Modal, TextInput, Tooltip, Select, Text } from "@mantine/core";
 import { IconArrowBigLeft, IconArrowBigRight, IconArrowBigUp, IconRefresh, IconHome2, IconFolderPlus, IconSearch, IconChevronLeft, IconFileUpload, IconChevronRight, IconX, IconCheck } from "@tabler/icons-react";
 import FileTable from './FileTable'
 import { useContext, useEffect, useRef, useState } from "react";
