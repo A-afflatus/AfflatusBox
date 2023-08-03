@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Menu, Modal, Text, Image } from '@mantine/core';
-import SurfaceIcon, { FloatingMenuProps } from './SurfaceIcon';
-import { IconSettings, IconSearch, IconUser, IconCategory, IconHome, IconBrandGithub, IconLogout } from '@tabler/icons-react';
+import { Menu, Modal, Text, Image, ColorScheme, MantineTheme, ActionIcon } from '@mantine/core';
+import { IconSettings, IconSearch, IconUser, IconCategory, IconHome, IconBrandGithub, IconLogout, IconSun, IconMoonStars } from '@tabler/icons-react';
 import { CSSProperties, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { WELCOME, APPS, SETTING } from '@/routers/constant';
@@ -9,7 +8,18 @@ import { quitApp } from '@/redux';
 import { useDisclosure } from '@mantine/hooks';
 import AuthorWX from '@/assets/authorwx.jpg';
 import { spotlight } from '@mantine/spotlight';
-import {toLink} from '@/routers';
+import { toLink } from '@/routers';
+
+export type FloatingMenuProps = {
+  colorScheme: ColorScheme;
+  toggleColorScheme: () => void;
+}
+//主题样式
+const themeStyle = (theme: MantineTheme) => ({
+  backgroundColor:
+    theme.colorScheme === 'dark' ? theme.colors.dark[6] : theme.colors.gray[0],
+  color: theme.colorScheme === 'dark' ? theme.colors.yellow[4] : theme.colors.blue[6],
+})
 
 export default function FloatingMenu(props: FloatingMenuProps) {
   const navigate = useNavigate()
@@ -21,11 +31,11 @@ export default function FloatingMenu(props: FloatingMenuProps) {
   const [translateY, setTranslateY] = useState(0);
 
   useEffect(() => {
-    const handleMouseMove = (event:any) => {
+    const handleMouseMove = (event: any) => {
       if (!isDragging) return;
       const diffX = event.clientX - startX;
       const diffY = event.clientY - startY;
-    
+
       // 计算限制范围
       const minX = 75 - window.innerWidth;
       const maxX = 0;
@@ -64,7 +74,7 @@ export default function FloatingMenu(props: FloatingMenuProps) {
     };
   }, [isDragging, startX, startY]);
 
-  const handleMouseDown = (event:any) => {
+  const handleMouseDown = (event: any) => {
     event.preventDefault();
     setIsDragging(true);
     setStartX(event.clientX - translateX);
@@ -77,7 +87,7 @@ export default function FloatingMenu(props: FloatingMenuProps) {
   };
 
   const floatingStyle: CSSProperties = {
-    zIndex:9999,
+    zIndex: 9999,
     position: 'fixed',
     bottom: '20px',
     right: '20px',
@@ -85,7 +95,6 @@ export default function FloatingMenu(props: FloatingMenuProps) {
     cursor: isDragging ? 'grabbing' : 'grab',
     transition: 'transform 0s ease',
   };
-
 
 
   return (
@@ -98,12 +107,18 @@ export default function FloatingMenu(props: FloatingMenuProps) {
       <div style={floatingStyle} onMouseDown={handleMouseDown} onDoubleClick={handleDoubleClick}>
         <Menu shadow="md" width={200} trigger="hover" openDelay={100} closeDelay={400} >
           <Menu.Target >
-              <SurfaceIcon {...props}></SurfaceIcon>
+            <ActionIcon
+              onClick={() => props.toggleColorScheme()}
+              size="lg"
+              sx={themeStyle}
+            >
+              {props.colorScheme === 'dark' ? <IconSun size="1.2rem" /> : <IconMoonStars size="1.2rem" />}
+            </ActionIcon>
           </Menu.Target>
 
           <Menu.Dropdown>
             <Menu.Label>系统功能</Menu.Label>
-            <Menu.Item icon={<IconSettings size={14} />} onClick={() => toLink({route:SETTING,navigate})}>设置</Menu.Item>
+            <Menu.Item icon={<IconSettings size={14} />} onClick={() => toLink({ route: SETTING, navigate })}>设置</Menu.Item>
 
             <Menu.Item
               icon={<IconSearch size={14} />}
@@ -114,8 +129,8 @@ export default function FloatingMenu(props: FloatingMenuProps) {
             </Menu.Item>
             <Menu.Divider />
             <Menu.Label>其余功能</Menu.Label>
-            <Menu.Item icon={<IconHome size={14} />} onClick={() => toLink({route:WELCOME,navigate})}>首页</Menu.Item>
-            <Menu.Item icon={<IconCategory size={14} />} onClick={() => toLink({route:APPS,navigate})}>功能菜单</Menu.Item>
+            <Menu.Item icon={<IconHome size={14} />} onClick={() => toLink({ route: WELCOME, navigate })}>首页</Menu.Item>
+            <Menu.Item icon={<IconCategory size={14} />} onClick={() => toLink({ route: APPS, navigate })}>功能菜单</Menu.Item>
             <Menu.Item icon={<IconUser size={14} />} onClick={open}>联系作者</Menu.Item>
             <Menu.Item icon={<IconBrandGithub size={14} />} onClick={() => toLink('https://github.com/A-afflatus')}>GitHub</Menu.Item>
             <Menu.Item color="red" icon={<IconLogout size={14} />} onClick={quitApp}>退出应用</Menu.Item>

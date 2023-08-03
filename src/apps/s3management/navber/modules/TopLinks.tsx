@@ -31,6 +31,13 @@ const useStyles = createStyles((theme) => ({
     mainLinkInner: {
         display: 'flex',
         alignItems: 'center',
+        fontSize: theme.fontSizes.xs,
+        fontWeight: 500,
+        color: theme.colorScheme === 'dark' ? theme.colors.dark[0] : theme.colors.gray[7],
+        '&:hover': {
+            backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[6] : theme.colors.gray[0],
+            color: theme.colorScheme === 'dark' ? theme.white : theme.black,
+        },
         flex: 1,
     },
 
@@ -63,7 +70,7 @@ export default function TopLinks() {
             case 'upload':
                 return <UploadPage />
             case 'setting':
-                return <SettingsPage close={close} />
+                return <SettingsPage key={1} close={close} />
             default:
                 return null
         }
@@ -92,17 +99,18 @@ export default function TopLinks() {
                         <span>上传任务</span>
                     </div>
                 </UnstyledButton>
-                <UnstyledButton className={classes.mainLink} style={{ display: 'flex' }} >
-                    <div className={classes.mainLinkInner} onClick={() => { setCurrentTitle('用户配置'); setModalType('setting'); open() }}>
+                <div className={classes.mainLink} style={{ display: 'flex' }}>
+                    <UnstyledButton className={classes.mainLinkInner} onClick={() => { setCurrentTitle('用户配置'); setModalType('setting'); open() }}>
                         <IconSettings size={20} className={classes.mainLinkIcon} stroke={1.5} />
                         <span>用户配置</span>
-                    </div>
-                    <Tooltip label='重新载入配置' withArrow position="right" onClick={()=>emitter.emit(INITS3CLIENT)}>
+                    </UnstyledButton>
+                    <Tooltip label='重新载入配置' withArrow position="right" onClick={() => emitter.emit(INITS3CLIENT)}>
                         <ActionIcon>
                             <IconRefresh size="1rem" />
                         </ActionIcon>
                     </Tooltip>
-                </UnstyledButton>
+                </div>
+
 
             </div>
         </>
