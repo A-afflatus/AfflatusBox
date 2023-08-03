@@ -74,7 +74,7 @@ export default function ClientInfo() {
                 }).catch((error) => {
                     console.log(error);
                     notifications.show({
-                        message: '获取bucket下文件列表失败',
+                        message: '获取bucket下文件列表失败,请检查网络或配置',
                         icon: <IconX size="1.1rem" />,
                         color: 'red'
                     })

@@ -1,0 +1,7 @@
+{
+    "s3Config":{
+        "base":{
+            "objectDelete":true
+        }
+    }
+}

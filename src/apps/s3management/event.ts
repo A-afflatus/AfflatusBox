@@ -12,5 +12,7 @@ export const ENTERFOLDER = 'ENTERFOLDER'
 export const UPLOADFILE = 'UPLOADFILE'
 //刷新列表
 export const REFRESH = 'REFRESH'
+//初始化客户端页面
+export const INITS3CLIENT = 'INITS3CLIENT'
 
 export default emitter

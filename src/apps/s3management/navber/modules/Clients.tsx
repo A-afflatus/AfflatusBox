@@ -1,8 +1,8 @@
-import { Button, TextInput, Box, ActionIcon, Group, Text, Tooltip, createStyles, rem, Modal, Checkbox, Skeleton, useMantineTheme, Center } from "@mantine/core";
+import { Button, TextInput, Box, ActionIcon, Group, Text, Tooltip, createStyles, rem, Modal, Checkbox, Skeleton, useMantineTheme, Center, Space } from "@mantine/core";
 import { IconCheck, IconPlus, IconRefresh, IconSettings, IconTrash, IconX } from "@tabler/icons-react";
-import { S3ClientInfo, getS3Clients, saveS3Client, deleteS3Client } from '@/redux'
+import { S3ClientInfo, getS3Clients, saveS3Client, deleteS3Client,updateS3Client } from '@/redux'
 import { useContext, useEffect, useState } from "react";
-import emitter, { PITCHS3CLIENT } from '@/apps/s3management/event'
+import emitter, { INITS3CLIENT, PITCHS3CLIENT } from '@/apps/s3management/event'
 import { S3ClientContext } from '@/apps/s3management'
 import { useForm, isNotEmpty, hasLength, matches } from '@mantine/form';
 import { useDisclosure, useToggle } from "@mantine/hooks";
@@ -10,15 +10,15 @@ import { ListBucketsCommand, S3Client } from "@aws-sdk/client-s3";
 import { notifications } from "@mantine/notifications";
 import { nanoid } from "@reduxjs/toolkit";
 
-function CreateS3Client({ close }: { close: () => void }) {
+function EditS3Client({ updateItem, close }: { updateItem: S3ClientInfo | null, close: () => void }) {
     const form = useForm({
         initialValues: {
-            name: '',
-            region: '',
-            endpoint: '',
-            accessKeyId: '',
-            secretAccessKey: '',
-            unForcePathStyle: false
+            name: updateItem!==null?updateItem.name:'',
+            region: updateItem!==null?updateItem.region:'',
+            endpoint: updateItem!==null?updateItem.endpoint:'',
+            accessKeyId: updateItem!==null?'************':'',
+            secretAccessKey: updateItem!==null?'************':'',
+            unForcePathStyle: updateItem!==null?!updateItem.forcePathStyle:false
         },
 
         validate: {
@@ -30,11 +30,11 @@ function CreateS3Client({ close }: { close: () => void }) {
         },
     });
     const [check, setCheck] = useState(false)
-
+    //校验客户端信息
     const checkForm = () => {
         new S3Client({
-            region: form.values.region.trim(),
-            endpoint: form.values.endpoint.trim(),
+            region: (form.values.region as string).trim(),
+            endpoint: (form.values.endpoint as string).trim(),
             forcePathStyle: !form.values.unForcePathStyle,
             credentials: {
                 accessKeyId: form.values.accessKeyId.trim(),
@@ -60,6 +60,7 @@ function CreateS3Client({ close }: { close: () => void }) {
             })
 
     }
+    //保存客户端信息
     const saveForm = () => {
         checkForm()
         if (check) {
@@ -95,6 +96,32 @@ function CreateS3Client({ close }: { close: () => void }) {
 
         }
     }
+    //修改客户端信息
+    const updateClient = ()=>{
+        if(updateItem){
+            updateS3Client({
+                id: updateItem.id,
+                name: form.values.name,
+                forcePathStyle: !form.values.unForcePathStyle,
+            }).then(()=>{
+                notifications.show({
+                    message: '修改成功',
+                    icon: <IconCheck size="1.1rem" />,
+                    color: 'green'
+                })
+                close()
+                //刷新客户端信息
+                emitter.emit(INITS3CLIENT)
+            }).catch((e)=>{
+                console.log("修改失败",e);
+                notifications.show({
+                    message: '修改失败',
+                    icon: <IconX size="1.1rem" />,
+                    color: 'red'
+                })
+            })
+        }
+    }
     return (
         <Box maw={400} mx="auto" >
             <form onSubmit={form.onSubmit(() => check ? saveForm() : checkForm())}>
@@ -109,12 +136,14 @@ function CreateS3Client({ close }: { close: () => void }) {
                     label="region"
                     placeholder="请输入region"
                     withAsterisk
+                    disabled={updateItem != null}
                     mt="md"
                     {...form.getInputProps('region')}
                 />
                 <TextInput
                     label="endpoint"
                     placeholder="请输入endpoint"
+                    disabled={updateItem != null}
                     withAsterisk
                     mt="md"
                     {...form.getInputProps('endpoint')}
@@ -122,6 +151,7 @@ function CreateS3Client({ close }: { close: () => void }) {
                 <TextInput
                     label="accessKeyId"
                     placeholder="请输入accessKeyId"
+                    disabled={updateItem != null}
                     withAsterisk
                     mt="md"
                     {...form.getInputProps('accessKeyId')}
@@ -129,6 +159,7 @@ function CreateS3Client({ close }: { close: () => void }) {
                 <TextInput
                     label="secretKey"
                     placeholder="请输入secretKey"
+                    disabled={updateItem != null}
                     withAsterisk
                     mt="md"
                     {...form.getInputProps('secretAccessKey')}
@@ -140,7 +171,8 @@ function CreateS3Client({ close }: { close: () => void }) {
                 />
                 <Group position="right" mt="md">
                     {
-                        check ? <Button type="submit">创建</Button> : <Button type="submit">验证</Button>
+                        updateItem != null ? <Button onClick={updateClient}>修改</Button>
+                            : check ? <Button type="submit">创建</Button> : <Button type="submit" color="green">验证</Button>
                     }
                 </Group>
             </form>
@@ -199,6 +231,9 @@ export default function BottomLinks() {
     //新建客户端
     const [openedNewClient, newClientDisclosure] = useDisclosure(false, { onClose: () => refresh() });
     const [openedDeleteClient, deleteClientDisclosure] = useDisclosure(false, { onClose: () => refresh() });
+    const [deleteId, setDeleteId] = useState<string>();
+    const [openedUpdateClient, updateClientDisclosure] = useDisclosure(false, { onClose: () => refresh() });
+    const [updateItem, setUpdateItem] = useState<S3ClientInfo | null>(null);
     const checkCurrent = (id: string) => {
         if (s3context.currentClientConfig?.id === id) {
             return {
@@ -208,7 +243,7 @@ export default function BottomLinks() {
         }
         return undefined
     }
-    const [deleteId, setDeleteId] = useState<string>();
+
     //删除客户端
     const deleteClient = () => {
         if (deleteId) {
@@ -232,10 +267,15 @@ export default function BottomLinks() {
                     deleteClientDisclosure.close()
                     setTimeout(() => {
                         refresh()
-                    },300)
+                    }, 300)
                 })
         }
     }
+    //鼠标移入事件
+    const [isHovered, setIsHovered] = useState<string>("");
+
+
+
     return (
         <>
             <Modal size="auto" withCloseButton={false} centered opened={openedDeleteClient} onClose={deleteClientDisclosure.close} title=" ">
@@ -252,8 +292,12 @@ export default function BottomLinks() {
                 </Group>
             </Modal>
             <Modal opened={openedNewClient} onClose={newClientDisclosure.close} title="新建客户端">
-                <CreateS3Client close={newClientDisclosure.close} />
+                <EditS3Client updateItem={null} close={newClientDisclosure.close} />
             </Modal>
+            <Modal opened={openedUpdateClient} onClose={updateClientDisclosure.close} title="修改客户端">
+                <EditS3Client updateItem={updateItem} close={updateClientDisclosure.close} />
+            </Modal>
+
             <Group className={classes.collectionsHeader} position="apart">
                 <Text size="xs" fw={700} weight={500} >
                     Clients
@@ -275,25 +319,37 @@ export default function BottomLinks() {
             <div className={classes.collections}>
                 <Skeleton height='60vh' visible={loading}>
                     {items.map((item) => (
-                        <div key={item.id} className={classes.collectionLink} style={checkCurrent(item.id)}>
+                        <div key={item.id} className={classes.collectionLink} style={checkCurrent(item.id)}
+                            onMouseEnter={() => setIsHovered(item.id)} onMouseLeave={() => setIsHovered("")}
+                        >
                             <Group position="apart">
                                 <a onClick={() => { emitter.emit(PITCHS3CLIENT, item) }}>
                                     {item.name}
                                 </a>
-                                <div style={{
-                                    display: 'flex',
-                                }}>
-                                    <ActionIcon size={15} variant="transparent"><IconSettings size="0.9rem" /></ActionIcon>
-                                    <ActionIcon size={15} variant="transparent" style={{ marginRight: '-7px' }} onClick={() => {
-                                        setDeleteId(item.id)
-                                        deleteClientDisclosure.open()
-                                    }}>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        opacity: isHovered === item.id ? 1 : 0, // 鼠标移入再展示
+                                    }}
+                                >
+                                    <ActionIcon size={15} variant="transparent"
+                                        onClick={() => {
+                                            setUpdateItem(item)
+                                            updateClientDisclosure.open()
+                                        }}>
+                                        <IconSettings size="0.9rem" />
+                                    </ActionIcon>
+                                    <Space w={2} />
+                                    <ActionIcon size={15} variant="transparent" style={{ marginRight: '-7px' }}
+                                        onClick={() => {
+                                            setDeleteId(item.id)
+                                            deleteClientDisclosure.open()
+                                        }}>
                                         <IconTrash size="0.9rem" color="#c97273" />
                                     </ActionIcon>
                                 </div>
                             </Group>
                         </div>
-
                     ))}
                 </Skeleton>
             </div>

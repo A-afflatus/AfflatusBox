@@ -1,10 +1,11 @@
-import { Modal, UnstyledButton, createStyles, rem } from "@mantine/core";
+import { ActionIcon, Modal, Tooltip, UnstyledButton, createStyles, rem } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { IconCloudDownload, IconCloudUpload, IconSettings } from "@tabler/icons-react";
+import { IconCloudDownload, IconCloudUpload, IconRefresh, IconSettings } from "@tabler/icons-react";
 import { useState } from "react";
 import DownloadPage from './TopTools/DownloadPage'
 import UploadPage from './TopTools/UploadPage'
 import SettingsPage from './TopTools/SettingsPage'
+import emitter, { INITS3CLIENT } from "../../event";
 const useStyles = createStyles((theme) => ({
     mainLinks: {
         paddingLeft: `calc(${theme.spacing.md} - ${theme.spacing.xs})`,
@@ -62,7 +63,7 @@ export default function TopLinks() {
             case 'upload':
                 return <UploadPage />
             case 'setting':
-                return <SettingsPage />
+                return <SettingsPage close={close} />
             default:
                 return null
         }
@@ -73,7 +74,7 @@ export default function TopLinks() {
                 opened={opened}
                 onClose={close}
                 title={currentTitle}
-                size="calc(100vw - 10rem)"
+                size="calc(100vw - 20rem)"
                 transitionProps={{ transition: 'fade', duration: 200 }}
             >
                 {modalPage()}
@@ -91,11 +92,16 @@ export default function TopLinks() {
                         <span>上传任务</span>
                     </div>
                 </UnstyledButton>
-                <UnstyledButton disabled className={classes.mainLink} onClick={() => { setCurrentTitle('用户配置'); setModalType('setting'); open() }}>
-                    <div className={classes.mainLinkInner}>
+                <UnstyledButton className={classes.mainLink} style={{ display: 'flex' }} >
+                    <div className={classes.mainLinkInner} onClick={() => { setCurrentTitle('用户配置'); setModalType('setting'); open() }}>
                         <IconSettings size={20} className={classes.mainLinkIcon} stroke={1.5} />
                         <span>用户配置</span>
                     </div>
+                    <Tooltip label='重新载入配置' withArrow position="right" onClick={()=>emitter.emit(INITS3CLIENT)}>
+                        <ActionIcon>
+                            <IconRefresh size="1rem" />
+                        </ActionIcon>
+                    </Tooltip>
                 </UnstyledButton>
 
             </div>

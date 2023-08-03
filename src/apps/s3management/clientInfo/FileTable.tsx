@@ -8,7 +8,7 @@ import emitter, { ENTERFOLDER, REFRESH } from '@/apps/s3management/event'
 import { S3ClientContext } from '@/apps/s3management';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { notifications } from '@mantine/notifications';
-import { openUrl } from '@/redux';
+import { openUrl,getS3Config } from '@/redux';
 //删除按钮
 const DeleteButton = ({ item }: { item: FileInfo }) => {
     const [show, setShow] = useState<boolean>(false);
@@ -144,6 +144,8 @@ interface FileTable {
 export default function FileTable({ objects }: { objects?: ListObjectsV2CommandOutput }) {
     const { classes, cx } = useStyles();
     const { currentBucket, currentClient } = useContext(S3ClientContext);
+    const [deleteEnable,setDeleteEnable] = useState<boolean>(true)
+    getS3Config().then(conf=>setDeleteEnable(conf.base.objectDelete))
     //获取对象链接
     const getObjectUrl = (objectKey: string) => {
         if (currentClient) {
@@ -263,7 +265,9 @@ export default function FileTable({ objects }: { objects?: ListObjectsV2CommandO
                                 </>
                                 : null
                         }
-                        <DeleteButton item={item}></DeleteButton>
+                        {
+                            deleteEnable?<DeleteButton item={item}></DeleteButton>:null
+                        }
                     </Flex>
                 </td>
             </tr>

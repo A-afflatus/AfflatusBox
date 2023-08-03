@@ -1,7 +1,7 @@
 import { AppShell } from '@mantine/core';
 import S3Navbear from './navber/S3Navbear'
 import { useEffect, useState } from 'react';
-import emitter, { PITCHBUCKET, PITCHS3CLIENT, REFRESH, UPLOADFILE } from '@/apps/s3management/event';
+import emitter, { INITS3CLIENT, PITCHBUCKET, PITCHS3CLIENT, REFRESH, UPLOADFILE } from '@/apps/s3management/event';
 import { S3ClientInfo } from '@/redux';
 import React from 'react'
 import { Bucket, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
@@ -16,12 +16,17 @@ export type S3Context = {
   currentClient?: S3Client;
   currentBucket?: Bucket;
 }
-
+const initConfig = { currentClientConfig: null }
 export const S3ClientContext = React.createContext<S3Context>({});
 export default function S3ClientManage() {
-  const [s3Context, setS3Context] = useState<S3Context>({ currentClientConfig: null })
+  const [s3Context, setS3Context] = useState<S3Context>(initConfig)
+  const [key,setKey] = useState<string>('1')
   useEffect(() => {
-
+    //初始化
+    const init = () => {
+      setS3Context(initConfig)
+      setKey(nanoid())
+    }
     //选中客户端
     const pitchS3client = (client: S3ClientInfo) => {
       const newContext = {
@@ -34,7 +39,7 @@ export default function S3ClientManage() {
     }
     //选中bucket
     const pitchBucket = (bucket: Bucket) => {
-      if(s3Context.currentBucket?.Name!==bucket.Name){
+      if (s3Context.currentBucket?.Name !== bucket.Name) {
         const newContext = {
           ...s3Context,
           currentBucket: bucket
@@ -73,10 +78,12 @@ export default function S3ClientManage() {
     emitter.on(PITCHS3CLIENT, pitchS3client)
     emitter.on(PITCHBUCKET, pitchBucket)
     emitter.on(UPLOADFILE, uploadFile)
+    emitter.on(INITS3CLIENT, init)
     return () => {
       emitter.off(PITCHS3CLIENT, pitchS3client)
       emitter.off(PITCHBUCKET, pitchBucket)
       emitter.off(UPLOADFILE, uploadFile)
+      emitter.off(INITS3CLIENT, init)
     }
   }, [s3Context])
 
@@ -84,9 +91,9 @@ export default function S3ClientManage() {
     <S3ClientContext.Provider value={s3Context}>
       <AppShell
         padding="md"
-        navbar={<S3Navbear />}
+        navbar={<S3Navbear key={key}/>}
       >
-        {s3Context.currentBucket?<ClientInfo key={nanoid()}/>:<S3Welcome/>}
+        {s3Context.currentBucket ? <ClientInfo key={nanoid()} /> : <S3Welcome />}
       </AppShell>
     </S3ClientContext.Provider>
   );
