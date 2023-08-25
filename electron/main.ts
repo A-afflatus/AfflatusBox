@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { app, BrowserWindow, ipcMain, nativeTheme, shell } from 'electron'
 import path from 'node:path'
-import { SWITCH_THEME_COLORS, GET_THEME_COLORS, QUIT_APP, OPEN_URL, GET_S3_CLIENTS, SAVE_S3_CLIENTS, DELETE_S3_CLIENT, UPDATE_S3_CLIENT, GET_S3_CONFIG, ENABLE_OBJECT_DELETE } from './constant';
+import { SWITCH_THEME_COLORS, GET_THEME_COLORS, QUIT_APP, OPEN_URL } from './constant';
 import settings from 'electron-settings'
 import baseConfig from '../config.base.json';
 import fs from 'fs';
+import { initChatIpc } from './apps/chatrobot';
+import { initS3ClientIpc } from './apps/s3client';
 
 // The built directory structure
 //
@@ -58,8 +60,12 @@ app.whenReady().then(createWindow)
 
 // 使用默认设置，setting.json
 // settings.configure({})
+settings.configure({
+  prettify:true
+})
+console.log("配置文件地址",settings.file());
 
-if(!fs.existsSync(settings.file())){
+if (!fs.existsSync(settings.file())) {
   console.log("初始化配置");
   settings.set(baseConfig)
 }
@@ -91,47 +97,10 @@ ipcMain.on(QUIT_APP, () => {
   app.quit()
 })
 
+initChatIpc(ipcMain)
+initS3ClientIpc(ipcMain)
 
-// 获取s3客户端列表
-ipcMain.handle(GET_S3_CLIENTS, async () => {
-  return settings.get('s3clients')
-});
 
-//新增s3客户端
-ipcMain.handle(SAVE_S3_CLIENTS, async (_, clientInfo) => {
-  try {
-    const s3clients: any = await settings.get('s3clients')??[]
-    await settings.set('s3clients', [...s3clients, {
-      ...clientInfo
-    }])
-    return true
-  } catch (error) {
-    console.log("添加s3客户端失败", error);
-    return false
-  }
-});
-//删除s3客户端
-ipcMain.handle(DELETE_S3_CLIENT, async (_, clientId) => {
-    const s3clients: any = await settings.get('s3clients')??[]
-    return settings.set('s3clients', [...(s3clients.filter((item: any)=>item.id !== clientId))])
-});
-//删除s3客户端
-ipcMain.handle(UPDATE_S3_CLIENT, async (_, client) => {
-    const s3clients: any = await settings.get('s3clients')??[]
-    const targetClient = s3clients.filter((item: any)=>item.id === client.id).shift()
-    if(targetClient){
-      targetClient.name = client.name
-      targetClient.forcePathStyle = client.forcePathStyle
-      return settings.set('s3clients', [...(s3clients.filter((item: any)=>item.id !== client.id)),targetClient])
-    }
-    console.log("没找到需要修改客户端",JSON.stringify(client));
-    return null  
-});
-//获取全部配置信息
-ipcMain.handle(GET_S3_CONFIG, async () => {
-  return settings.get('s3Config')
-});
-//开启或关闭对象删除
-ipcMain.handle(ENABLE_OBJECT_DELETE, async (_, enable) => {
-  return settings.set('s3Config.base.objectDelete',enable)
-});
+
+
+

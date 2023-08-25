@@ -45,16 +45,6 @@ const useStyles = createStyles((theme) => ({
         marginRight: theme.spacing.sm,
         color: theme.colorScheme === 'dark' ? theme.colors.dark[2] : theme.colors.gray[6],
     },
-
-    mainLinkBadge: {
-        padding: 0,
-        width: rem(20),
-        height: rem(20),
-        pointerEvents: 'none',
-    },
-
-
-
 }));
 
 export default function TopLinks() {

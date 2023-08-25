@@ -8,3 +8,7 @@ export const SETTING = HOME + 'SETTING'
 export const S3CLIENT = HOME + 'S3CLIENT'
 export const S3WELCOME = HOME + 'S3CLIENT' + '/S3WELCOME'
 export const S3CLIENTINFO = HOME + 'S3CLIENT' + '/S3CLIENTINFO'
+
+//聊天机器人
+export const CHATBOT = HOME + 'CHATBOT'
+
