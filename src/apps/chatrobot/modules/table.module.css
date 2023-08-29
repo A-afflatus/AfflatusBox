@@ -1,10 +1,10 @@
 .tableContainer {
-    border-collapse: collapse;
-  }
-  
-  .tableContainer table,
-  .tableContainer th,
-  .tableContainer td {
-    border: 1px solid black;
-    padding: 8px;
-  }
+  border-collapse: collapse;
+}
+
+.tableContainer table,
+.tableContainer th,
+.tableContainer td {
+  border: 1px solid black;
+  padding: 8px;
+}

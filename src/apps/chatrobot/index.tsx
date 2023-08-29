@@ -7,8 +7,8 @@ import { IconCheck } from '@tabler/icons-react';
 import { useToggle } from '@mantine/hooks';
 type AiContext = {
     currentSessionId?: string;
-    cureentClient?: string;
     currentOpenAiKey?: string;
+    currentOpenAiBaseUrl?: string;
 }
 const initConfig = {}
 export const ChatContext = React.createContext<AiContext>(initConfig);
@@ -23,14 +23,15 @@ export default function ChatRobot() {
             .then((res) => {
                 setContext({
                     ...context,
-                    currentOpenAiKey: res.openAiKey
+                    currentOpenAiKey: res.openAiKey,
+                    currentOpenAiBaseUrl: res.openAiBaseUrl
                 })
             }).catch((err) => {
                 console.log("加载机器人配置失败", err)
                 alert("加载机器人配置失败")
             })
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, [flag])
     useEffect(() => {
         //更新配置
         const updeateConfig = (config: ChatRobotConfig) => {

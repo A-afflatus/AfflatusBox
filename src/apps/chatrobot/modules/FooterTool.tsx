@@ -61,7 +61,7 @@ export default function FooterTool({ name }: Props) {
     return (
         <>
             <Modal opened={settingOpend} onClose={settingDisclosure.close} title="设置" centered>
-                <Setting key={nanoid()}/>
+                <Setting key={"a"+nanoid()}/>
             </Modal>
             <div className={classes.link} style={{ display: 'flex' }}>
                 <UnstyledButton className={classes.linkInner} onClick={settingDisclosure.open}>

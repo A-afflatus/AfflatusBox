@@ -66,7 +66,7 @@ function EditS3Client({ updateItem, close }: { updateItem: S3ClientInfo | null, 
         if (check) {
             const formValue = form.values
             const client: S3ClientInfo = {
-                id: nanoid(),
+                id: "a"+nanoid(),
                 name: formValue.name,
                 region: formValue.region,
                 endpoint: formValue.endpoint,

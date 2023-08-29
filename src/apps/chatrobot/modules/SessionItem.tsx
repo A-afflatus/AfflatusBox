@@ -2,7 +2,7 @@ import { ActionIcon, Tooltip, UnstyledButton, createStyles, Text, rem, TextInput
 import { useToggle } from "@mantine/hooks";
 import { IconDeviceFloppy, IconMessageDots, IconPencilMinus, IconTrash } from "@tabler/icons-react";
 import { useRef, useState } from "react";
-import { deleteChatRobotSession, updateChatRobotSessionName } from "@/redux";
+import { deleteChatRobotSession, updateChatRobotSessionName,ChatRobotSession } from "@/redux";
 const useStyles = createStyles((theme) => ({
     link: {
         display: 'flex',
@@ -52,15 +52,14 @@ const useStyles = createStyles((theme) => ({
 
 }));
 type Props = {
-    id: string;
-    name: string,
-    hoverOrClick?: boolean
-    refresh: () => void
+    session:ChatRobotSession;
+    hoverOrClick?: boolean;
+    refresh: () => void;
 }
-export default function ChatItem({ id, name, hoverOrClick,refresh }: Props) {
+export default function SessionItem({session, hoverOrClick,refresh }: Props) {
     const { classes } = useStyles()
     const [edit, toggle] = useToggle([false, true])
-    const [chatName, setChatName] = useState<string>(name)
+    const [chatName, setChatName] = useState<string>(session.name)
     const nameInput = useRef<HTMLInputElement>(null)
     return (
         <div className={classes.link} style={{ display: 'flex', backgroundColor: hoverOrClick ? '#343541' : '' }}>
@@ -82,7 +81,7 @@ export default function ChatItem({ id, name, hoverOrClick,refresh }: Props) {
                                 if (nameInput.current && nameInput.current.value && nameInput.current.value !== chatName && nameInput.current.value.trim() !== '') {
                                     setChatName(nameInput.current.value)
                                     //更新会话名称
-                                    updateChatRobotSessionName(id, nameInput.current.value)
+                                    updateChatRobotSessionName(session.id, nameInput.current.value)
                                 }
                             }}>
                                 <ActionIcon className={classes.operationIcon}>
@@ -96,7 +95,7 @@ export default function ChatItem({ id, name, hoverOrClick,refresh }: Props) {
                                     </ActionIcon>
                                 </Tooltip>
                                 <Tooltip label='删除会话' withArrow position="right" onClick={() => {
-                                    deleteChatRobotSession(id)
+                                    deleteChatRobotSession(session.id)
                                     refresh()
                                 }}>
                                     <ActionIcon className={classes.operationIcon} >

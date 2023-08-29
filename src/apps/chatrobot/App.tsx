@@ -1,6 +1,6 @@
 import { ActionIcon, AppShell, Button,  Flex, Navbar, ScrollArea, Space, Text } from '@mantine/core';
 import { IconLayoutSidebar, IconPlus } from '@tabler/icons-react';
-import ChatItem from './modules/SessionItem';
+import SessionItem from './modules/SessionItem';
 import FooterTool from './modules/FooterTool';
 import { useDisclosure, useToggle } from '@mantine/hooks';
 import { useContext, useEffect, useState } from 'react';
@@ -48,7 +48,7 @@ export default function ChatRobot() {
                             {
                                 sessionList.map((item) =>
                                     <div key={item.id} onClick={() => emitter.emit(CHECKEDSESSION, item.id)}>
-                                        <ChatItem id={item.id} name={item.name} refresh={refresh}
+                                        <SessionItem session={item} refresh={refresh}
                                             hoverOrClick={item.id === context.currentSessionId}
                                         />
                                     </div>

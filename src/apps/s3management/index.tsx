@@ -25,7 +25,7 @@ export default function S3ClientManage() {
     //初始化
     const init = () => {
       setS3Context(initConfig)
-      setKey(nanoid())
+      setKey("a"+nanoid())
     }
     //选中客户端
     const pitchS3client = (client: S3ClientInfo) => {
@@ -93,7 +93,7 @@ export default function S3ClientManage() {
         padding="md"
         navbar={<S3Navbear key={key}/>}
       >
-        {s3Context.currentBucket ? <ClientInfo key={nanoid()} /> : <S3Welcome />}
+        {s3Context.currentBucket ? <ClientInfo key={"a"+nanoid()} /> : <S3Welcome />}
       </AppShell>
     </S3ClientContext.Provider>
   );
