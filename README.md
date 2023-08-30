@@ -1,6 +1,6 @@
 <p align="center">
     <a href="https://afflatus.wang" target="_blank" rel="noopener noreferrer">
-        <img src="https://afflatus-wj.oss-cn-beijing.aliyuncs.com/logo/logo/afflatus%20%282%29.png?Expires=1693405364&OSSAccessKeyId=TMP.3Khrj51nboBvEdHCnMhvp2SeKHJmnyTxXmcrDsR6a4nvbk2rjWTuaoJGqBRTNCdhBpPr66yVRX1RhH8b1PAxr2Rx7bAhAW&Signature=TltQxNHpk9KHy12nKpNjsfVpcgw%3D" alt="AfflatusBox logo" />
+        <img src="https://afflatus-wj.oss-cn-beijing.aliyuncs.com/logo/logo/afflatus%20%282%29.png" alt="AfflatusBox logo" />
     </a>
 </p>
 <p align="center"><b>AfflatusBox</b> 灵感收纳箱</p>
