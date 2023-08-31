@@ -24,7 +24,7 @@
 <img  src="https://img.shields.io/github/package-json/version/A-afflatus/AfflatusBox/main" />
 </a>
 <a href="#">
-<img  src="https://img.shields.io/badge/node-^v16.19.0-blue" />
+<img  src="https://img.shields.io/badge/node-^v18.17.0-blue" />
 </a>
 
 ------------------------------
