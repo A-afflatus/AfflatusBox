@@ -12,3 +12,7 @@ export const S3CLIENTINFO = HOME + 'S3CLIENT' + '/S3CLIENTINFO'
 //聊天机器人
 export const CHATBOT = HOME + 'CHATBOT'
 
+//github热门项目
+export const GITHUBHOTREPO = HOME + 'GITHUBHOTREPO'
+
+
