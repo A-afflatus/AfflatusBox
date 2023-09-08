@@ -1,23 +1,70 @@
-import { Grid, MultiSelect, Select, SimpleGrid, TextInput } from "@mantine/core";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Grid, MultiSelect, Select, SimpleGrid, Skeleton, TextInput } from "@mantine/core";
 import { IconChevronDown } from "@tabler/icons-react";
-import Repocard from './modules/repocard';
+import Project from './modules/repocard';
 import { LANGUAGES } from '@/utils/constant';
 import { useForm } from "@mantine/form";
 import { useDebouncedState } from "@mantine/hooks";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Octokit } from "octokit";
+import dayjs from "dayjs";
+const octokit = new Octokit({})
+
 export default function GithubHotRepo() {
-    const [value, setValue] = useDebouncedState('', 500);
+    const [searchText, setSearchText] = useDebouncedState('', 500);
+    const [languages, setLanguages] = useDebouncedState<string[]>([], 1000);
+    const [loading, setLoading] = useState(true)
+
+    const [projects, setProjects] = useState<any[]>([])
     const form = useForm({
         initialValues: {
-            languages:[],
-            date:'今日',
-            sort:'Stars',
+            date: '全部时间',
+            sort: 'Stars',
         },
     });
-    useEffect(()=>{
-        //todo 重新查
-        
-    },[form.values, value])
+    useEffect(() => {
+        setLoading(true)
+        const language = languages.join(" ").trim()
+        const created = (() => {
+            switch (form.values.date) {
+                case '今日':
+                    return 'created:' + dayjs().format('YYYY-MM-DD')
+                case '本周':
+                    return 'created:' + dayjs().startOf('week').format('YYYY-MM-DD') + '..' + dayjs().endOf('week').format('YYYY-MM-DD')
+                case '本月':
+                    return 'created:' + dayjs().startOf('month').format('YYYY-MM-DD') + '..' + dayjs().endOf('month').format('YYYY-MM-DD')
+                case '全部时间':
+                    return ''
+                default:
+                    return 'created:' + dayjs().format('YYYY-MM-DD')
+            }
+        })()
+        const q = (() => {
+            const params = []
+            if (searchText.trim() !== "") params.push(searchText.trim())
+            if (language !== "") params.push("language:" + language.toLowerCase())
+            if (created !== "") params.push(created)
+            params.push('stars:>1')
+            return params.join(" ")
+        })()
+        //获取github配置
+        octokit.request('GET /search/repositories', {
+            q,
+            order: "desc",
+            sort: (form.values.sort === '需要帮助的问题' ? 'help-wanted-issues' : form.values.sort.toLowerCase()) as any,
+            page: 1,
+            per_page: 30,
+        }).then((res) => {
+            setProjects(res.data.items)
+        }).catch((err) => {
+            console.log("查询失败", err)
+            setProjects([])
+            alert(err)
+        }).finally(() => {
+            setLoading(false)
+        })
+
+    }, [form.values, languages, searchText])
     return (
         <>
             <div style={{
@@ -29,13 +76,15 @@ export default function GithubHotRepo() {
             }}>
                 <Grid columns={12}>
                     <Grid.Col span={5}>
-                        <MultiSelect 
-                        placeholder="编程语言"
-                         maxSelectedValues={3} 
-                        data={LANGUAGES} 
-                        searchable
-                        rightSection={<IconChevronDown size="1rem" />} 
-                        {...form.getInputProps('languages')}
+                        <MultiSelect
+                            placeholder="编程语言"
+                            maxSelectedValues={3}
+                            data={LANGUAGES}
+                            searchable
+                            rightSection={<IconChevronDown size="1rem" />}
+                            onChange={(event) => {
+                                setLanguages(event)
+                            }}
                         />
                     </Grid.Col>
                     <Grid.Col span={2}>
@@ -54,7 +103,7 @@ export default function GithubHotRepo() {
                             rightSection={<IconChevronDown size="1rem" />}
                             rightSectionWidth={30}
                             styles={{ rightSection: { pointerEvents: 'none' } }}
-                            data={['Stars', '发布时间']}
+                            data={["Stars", "Forks", "需要帮助的问题", "Updated"]}
                             {...form.getInputProps('sort')}
                         />
                     </Grid.Col>
@@ -64,31 +113,22 @@ export default function GithubHotRepo() {
                             placeholder="关键字"
                             withAsterisk
                             onChange={(event) => {
-                                setValue(event.currentTarget.value)
+                                setSearchText(event.currentTarget.value)
                             }}
                         />
                     </Grid.Col>
                 </Grid>
             </div>
-            <div style={{ marginTop: '60px', marginLeft: '15px', width: 'calc(100% - 30px) ', }}>
-                <SimpleGrid cols={3} mt="md">
-                    {
-                        [2131, 2, 3213, 445, 5765, 6876, 7, 89087, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20].map((i) => (
-                            <Repocard key={i} image={"https://images.unsplash.com/photo-1437719417032-8595fd9e9dc6?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=600&q=80"} title={"github项目"} country={"中国"} description={"Completely renovated for the season 2020, Arena Verudela Bech Apartments are fully equipped and modernly furnished 4-star self-service apartments located on the Adriatic coastline by one of the most beautiful beaches in Pula."}
-                                badges={[{
-                                    emoji: '☀️',
-                                    label: 'SUNNNY WEATHER1'
-                                }, {
-                                    emoji: '☀️',
-                                    label: 'SUNNNY WEATHER2'
-                                }, {
-                                    emoji: '☀️',
-                                    label: 'SUNNNY WEATHER3'
-                                },]} />)
-                        )
-                    }
-                </SimpleGrid>
-            </div>
+            <Skeleton visible={loading}>
+                <div style={{ marginTop: '60px', marginLeft: '15px', width: 'calc(100% - 30px) ', }}>
+                    <SimpleGrid cols={3} mt="md">
+                        {
+                            projects.map((project) => (<Project key={project.id} info={project} />))
+                        }
+                    </SimpleGrid>
+                </div>
+            </Skeleton>
+
         </>
     )
 }

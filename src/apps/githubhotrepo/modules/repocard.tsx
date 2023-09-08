@@ -1,15 +1,17 @@
-import { IconHeart } from '@tabler/icons-react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Card,
-  Image,
   Text,
   Group,
   Badge,
   Button,
-  ActionIcon,
   createStyles,
   rem,
+  Tooltip,
+  Avatar,
 } from '@mantine/core';
+import { render } from '@/utils/markdownit';
+import { openUrl } from '@/redux';
 
 const useStyles = createStyles((theme) => ({
   card: {
@@ -17,9 +19,8 @@ const useStyles = createStyles((theme) => ({
   },
 
   section: {
-    borderBottom: `${rem(1)} solid ${
-      theme.colorScheme === 'dark' ? theme.colors.dark[4] : theme.colors.gray[3]
-    }`,
+    borderBottom: `${rem(1)} solid ${theme.colorScheme === 'dark' ? theme.colors.dark[4] : theme.colors.gray[3]
+      }`,
     paddingLeft: theme.spacing.md,
     paddingRight: theme.spacing.md,
     paddingBottom: theme.spacing.md,
@@ -37,24 +38,26 @@ const useStyles = createStyles((theme) => ({
 }));
 
 interface BadgeCardProps {
-  image: string;
   title: string;
-  country: string;
+  star: string;
   description: string;
+  homeUrl: string;
+  licebse?: string;
+  ownerAvatar?: string;
+  ownerLogin?: string;
   badges: {
-    emoji: string;
     label: string;
   }[];
 }
 
-export default function Repocard({ image, title, description, country, badges }: BadgeCardProps) {
+export function Repocard({ title, description, star, badges, homeUrl, licebse,ownerAvatar,ownerLogin }: BadgeCardProps) {
   const { classes, theme } = useStyles();
+  const descriptionMd = render(description ?? "")
 
   const features = badges.map((badge) => (
     <Badge
       color={theme.colorScheme === 'dark' ? 'dark' : 'gray'}
       key={badge.label}
-      leftSection={badge.emoji}
     >
       {badge.label}
     </Badge>
@@ -62,25 +65,37 @@ export default function Repocard({ image, title, description, country, badges }:
 
   return (
     <Card withBorder radius="md" p="md" className={classes.card}>
-      <Card.Section>
-        <Image src={image} alt={title} height={180} />
-      </Card.Section>
-
+      <Card.Section />
       <Card.Section className={classes.section} mt="md">
         <Group position="apart">
-          <Text fz="lg" fw={500}>
-            {title}
-          </Text>
-          <Badge size="sm">{country}</Badge>
+          <div style={{ width: '200px' }}>
+            <Tooltip label={title}>
+              <Text fz="lg" fw={500} truncate='end'>
+                {title}
+              </Text>
+            </Tooltip>
+          </div>
+          <div>
+            <Badge size="sm" color="yellow">{star}</Badge>
+            {licebse?<>&nbsp;<Badge size="sm" >{licebse}</Badge></>:null}
+          </div>
         </Group>
-        <Text fz="sm" mt="xs">
-          {description}
-        </Text>
+        <div style={{
+          height: '60px',
+          fontSize: 15,
+          overflow: 'hidden'
+        }} dangerouslySetInnerHTML={{
+          __html: descriptionMd
+        }} />
       </Card.Section>
 
-      <Card.Section className={classes.section}>
+      <Card.Section className={classes.section} style={{
+        height: '100px',
+        fontSize: 15,
+        overflow: 'hidden'
+      }}>
         <Text mt="md" className={classes.label} c="dimmed">
-          Perfect for you, if you enjoy
+          Topics
         </Text>
         <Group spacing={7} mt={5}>
           {features}
@@ -88,13 +103,34 @@ export default function Repocard({ image, title, description, country, badges }:
       </Card.Section>
 
       <Group mt="xs">
-        <Button radius="md" style={{ flex: 1 }}>
+        <Button radius="md" style={{ flex: 1 }} onClick={() => openUrl(homeUrl)}>
           Show details
         </Button>
-        <ActionIcon variant="default" radius="md" size={36}>
-          <IconHeart size="1.1rem" className={classes.like} stroke={1.5} />
-        </ActionIcon>
+        <Tooltip label={ownerLogin}>
+        <Avatar component="a" src={ownerAvatar}/>
+        </Tooltip>
       </Group>
     </Card>
   );
+}
+
+export default function Project({ info }: any) {
+  let starStr = info.stargazers_count + "-Star";
+  if (info.stargazers_count > 1000) {
+    starStr = (info.stargazers_count / 1000).toFixed(1) + "k-Star";
+  }
+  const badges = info.topics.map((topic: any) => ({
+    label: topic
+  }))
+  return (
+    <Repocard
+      title={info.full_name}
+      star={starStr}
+      description={info.description}
+      homeUrl={info.html_url}
+      licebse={info.license?.spdx_id}
+      ownerAvatar={info.owner?.avatar_url}
+      ownerLogin={info.owner?.login}
+      badges={badges} />
+  )
 }
