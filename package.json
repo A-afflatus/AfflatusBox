@@ -1,7 +1,7 @@
 {
   "name": "afflatus-box",
   "private": true,
-  "version": "0.0.2-beta",
+  "version": "0.0.3-beta",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && electron-builder",
