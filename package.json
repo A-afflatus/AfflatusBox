@@ -21,6 +21,7 @@
     "@mantine/spotlight": "^6.0.16",
     "@reduxjs/toolkit": "^1.9.5",
     "@tabler/icons-react": "^2.25.0",
+    "@tldraw/tldraw": "^1.29.2",
     "@traptitech/markdown-it-katex": "^3.6.0",
     "dayjs": "^1.11.9",
     "electron-settings": "^4.0.2",

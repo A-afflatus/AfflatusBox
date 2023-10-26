@@ -15,4 +15,7 @@ export const CHATBOT = HOME + 'CHATBOT'
 //github热门项目
 export const GITHUBHOTREPO = HOME + 'GITHUBHOTREPO'
 
+//tldraw白板
+export const TLDRAW = HOME + 'TLDRAW'
+
 
