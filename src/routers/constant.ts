@@ -18,4 +18,7 @@ export const GITHUBHOTREPO = HOME + 'GITHUBHOTREPO'
 //tldraw白板
 export const TLDRAW = HOME + 'TLDRAW'
 
+//mock服务器
+export const MOCKSERVER = HOME + 'MOCKSERVER'
+
 

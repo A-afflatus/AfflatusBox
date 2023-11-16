@@ -1,0 +1,23 @@
+.controlBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f2f2f2;
+  white-space: nowrap;
+}
+
+.path {
+  margin-right: auto;
+  padding: 5px;
+  font-family: Arial, sans-serif; /* 设置字体样式 */
+  font-size: 14px; /* 设置字体大小 */
+  color: #333; /* 设置字体颜色 */
+}
+
+.buttonGroup {
+  display: flex;
+}
+
+.buttonGroup div {
+  margin-left: 5px;
+}
